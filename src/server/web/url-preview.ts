@@ -5,6 +5,7 @@ import Logger from '../../services/logger';
 import config from '../../config';
 import { query } from '../../prelude/url';
 import { getJson } from '../../misc/fetch';
+import { getProxyUrlWithPreview } from '../proxy/proxy-v2';
 
 const logger = new Logger('url-preview');
 
@@ -26,8 +27,8 @@ module.exports = async (ctx: Koa.Context) => {
 
 		logger.succ(`Got preview of ${ctx.query.url}: ${summary.title}`);
 
-		summary.icon = wrap(summary.icon);
-		summary.thumbnail = wrap(summary.thumbnail);
+		summary.icon = getProxyUrlWithPreview(summary.icon);
+		summary.thumbnail = getProxyUrlWithPreview(summary.thumbnail);
 
 		// Cache 7days
 		ctx.set('Cache-Control', 'max-age=604800, immutable');
