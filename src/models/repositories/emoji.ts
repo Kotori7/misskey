@@ -1,6 +1,7 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { Emoji } from '../entities/emoji';
 import { ensure } from '../../prelude/ensure';
+import { getProxyUrl } from '../../server/proxy/proxy-v2';
 
 @EntityRepository(Emoji)
 export class EmojiRepository extends Repository<Emoji> {
@@ -15,7 +16,7 @@ export class EmojiRepository extends Repository<Emoji> {
 			name: emoji.name,
 			category: emoji.category,
 			host: emoji.host,
-			url: emoji.url,
+			url: getProxyUrl(emoji.url),
 		};
 	}
 
