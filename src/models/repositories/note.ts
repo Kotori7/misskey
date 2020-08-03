@@ -10,6 +10,7 @@ import { toString } from '../../mfm/to-string';
 import { parse } from '../../mfm/parse';
 import { Emoji } from '../entities/emoji';
 import { concat } from '../../prelude/array';
+import { getProxyUrl } from '../../server/proxy/proxy-v2';
 
 export type PackedNote = SchemaType<typeof packedNoteSchema>;
 
@@ -154,7 +155,7 @@ export class NoteRepository extends Repository<Note> {
 				}).then(emojis => emojis.map((emoji: Emoji) => {
 					return {
 						name: emoji.name,
-						url: emoji.url,
+						url: getProxyUrl(emoji.url),
 					};
 				}));
 
@@ -179,7 +180,7 @@ export class NoteRepository extends Repository<Note> {
 				}).then(emojis => emojis.map((emoji: Emoji) => {
 					return {
 						name: `${emoji.name}@${emoji.host || '.'}`,	// @host付きでローカルは.
-						url: emoji.url,
+						url: getProxyUrl(emoji.url),
 					};
 				}));
 				all = concat([all, tmp]);

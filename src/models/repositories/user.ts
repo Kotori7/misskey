@@ -6,6 +6,8 @@ import { ensure } from '../../prelude/ensure';
 import config from '../../config';
 import { SchemaType } from '../../misc/schema';
 import { awaitAll } from '../../prelude/await-all';
+import { getProxyUrl } from '../../server/proxy/proxy-v2';
+import { Emoji } from '../entities/emoji';
 
 export type PackedUser = SchemaType<typeof packedUserSchema>;
 
@@ -173,13 +175,14 @@ export class UserRepository extends Repository<User> {
 			isCat: user.isCat || falsy,
 
 			// カスタム絵文字添付
-			emojis: user.emojis.length > 0 ? Emojis.find({
-				where: {
-					name: In(user.emojis),
-					host: user.host
-				},
-				select: ['name', 'host', 'url', 'aliases']
-			}) : [],
+			// emojis: user.emojis.length > 0 ? Emojis.find({
+			// 	where: {
+			// 		name: In(user.emojis),
+			// 		host: user.host
+			// 	},
+			// 	select: ['name', 'host', 'url', 'aliases']
+			// }) : [],
+			emojis: user.emojis.length > 0 ? getUserEmojis(user) : [],
 
 			...(opts.includeHasUnreadNotes ? {
 				hasUnreadSpecifiedNotes: NoteUnreads.count({
@@ -449,3 +452,17 @@ export const packedUserSchema = {
 		},
 	},
 };
+
+async function getUserEmojis(user: User): Promise<Emoji[]> {
+	const em = await Emojis.find({
+		where: {
+			name: In(user.emojis),
+			host: user.host
+		},
+		select: ['name', 'host', 'url', 'aliases']
+	});
+	for (const emj of em) {
+		emj.url = getProxyUrl(emj.url);
+	}
+	return em;
+}
