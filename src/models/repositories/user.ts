@@ -1,7 +1,7 @@
 import $ from 'cafy';
 import { EntityRepository, Repository, In, Not } from 'typeorm';
 import { User, ILocalUser, IRemoteUser } from '../entities/user';
-import { Emojis, Notes, NoteUnreads, FollowRequests, Notifications, MessagingMessages, UserNotePinings, Followings, Blockings, Mutings, UserProfiles, UserSecurityKeys, UserGroupJoinings, Pages, Announcements, AnnouncementReads, Antennas, AntennaNotes } from '..';
+import { Emojis, Notes, NoteUnreads, FollowRequests, Notifications, MessagingMessages, UserNotePinings, Followings, Blockings, Mutings, UserProfiles, UserSecurityKeys, UserGroupJoinings, Pages, Announcements, AnnouncementReads, Antennas, AntennaNotes, ChannelFollowings } from '..';
 import { ensure } from '../../prelude/ensure';
 import config from '../../config';
 import { SchemaType } from '../../misc/schema';
@@ -109,6 +109,17 @@ export class UserRepository extends Repository<User> {
 		return unread != null;
 	}
 
+	public async getHasUnreadChannel(userId: User['id']): Promise<boolean> {
+		const channels = await ChannelFollowings.find({ followerId: userId });
+
+		const unread = channels.length > 0 ? await NoteUnreads.findOne({
+			userId: userId,
+			noteChannelId: In(channels.map(x => x.id)),
+		}) : null;
+
+		return unread != null;
+	}
+
 	public async getHasUnreadNotification(userId: User['id']): Promise<boolean> {
 		const mute = await Mutings.find({
 			muterId: userId
@@ -141,7 +152,6 @@ export class UserRepository extends Repository<User> {
 		options?: {
 			detail?: boolean,
 			includeSecrets?: boolean,
-			includeHasUnreadNotes?: boolean
 		}
 	): Promise<PackedUser> {
 		const opts = Object.assign({
@@ -184,17 +194,6 @@ export class UserRepository extends Repository<User> {
 			// }) : [],
 			emojis: user.emojis.length > 0 ? getUserEmojis(user) : [],
 
-			...(opts.includeHasUnreadNotes ? {
-				hasUnreadSpecifiedNotes: NoteUnreads.count({
-					where: { userId: user.id, isSpecified: true },
-					take: 1
-				}).then(count => count > 0),
-				hasUnreadMentions: NoteUnreads.count({
-					where: { userId: user.id },
-					take: 1
-				}).then(count => count > 0),
-			} : {}),
-
 			...(opts.detail ? {
 				url: profile!.url,
 				createdAt: user.createdAt.toISOString(),
@@ -236,13 +235,23 @@ export class UserRepository extends Repository<User> {
 				alwaysMarkNsfw: profile!.alwaysMarkNsfw,
 				carefulBot: profile!.carefulBot,
 				autoAcceptFollowed: profile!.autoAcceptFollowed,
+				hasUnreadSpecifiedNotes: NoteUnreads.count({
+					where: { userId: user.id, isSpecified: true },
+					take: 1
+				}).then(count => count > 0),
+				hasUnreadMentions: NoteUnreads.count({
+					where: { userId: user.id, isMentioned: true },
+					take: 1
+				}).then(count => count > 0),
 				hasUnreadAnnouncement: this.getHasUnreadAnnouncement(user.id),
 				hasUnreadAntenna: this.getHasUnreadAntenna(user.id),
+				hasUnreadChannel: this.getHasUnreadChannel(user.id),
 				hasUnreadMessagingMessage: this.getHasUnreadMessagingMessage(user.id),
 				hasUnreadNotification: this.getHasUnreadNotification(user.id),
 				hasPendingReceivedFollowRequest: this.getHasPendingReceivedFollowRequest(user.id),
 				integrations: profile!.integrations,
 				mutedWords: profile!.mutedWords,
+				includingNotificationTypes: profile?.includingNotificationTypes,
 			} : {}),
 
 			...(opts.includeSecrets ? {
@@ -279,7 +288,6 @@ export class UserRepository extends Repository<User> {
 		options?: {
 			detail?: boolean,
 			includeSecrets?: boolean,
-			includeHasUnreadNotes?: boolean
 		}
 	) {
 		return Promise.all(users.map(u => this.pack(u, me, options)));
