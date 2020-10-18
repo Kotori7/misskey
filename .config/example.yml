@@ -154,10 +154,8 @@ id: 'aid'
 
 # Media Proxy
 #mediaProxy: https://example.com/proxy
-<<<<<<< HEAD
 mediaProxyToken: 'some random string'
-=======
 
 # Sign to ActivityPub GET request (default: false)
 #signToActivityPubGet: true
->>>>>>> 12.48.2
+

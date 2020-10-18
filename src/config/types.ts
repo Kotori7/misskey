@@ -58,12 +58,9 @@ export type Source = {
 	};
 
 	mediaProxy?: string;
-<<<<<<< HEAD
 	mediaProxyToken: string;
-=======
 
 	signToActivityPubGet?: boolean;
->>>>>>> 12.48.2
 };
 
 /**
