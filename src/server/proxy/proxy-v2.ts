@@ -52,24 +52,24 @@ export async function proxyMedia(ctx: Koa.Context) {
 }
 
 export function getProxyUrl(url: string): string {
-	//const u = new URL(url);
-	//if (toPuny(u.host) === toPuny(config.host)) return url;
+	const u = new URL(url);
+	if (toPuny(u.host) === toPuny(config.host)) return url;
 	const sig = generateSignature(url);
 	const url64 = Buffer.from(url, 'utf-8').toString('base64').replace(/=+/g, '');
 	return `${config.url}/proxy/${url64}/${sig}`;
 }
 
 export function getProxyUrlWithPreview(url: string): string {
-	//const u = new URL(url);
-	//if (toPuny(u.host) === toPuny(config.host)) return url;
+	const u = new URL(url);
+	if (toPuny(u.host) === toPuny(config.host)) return url;
 	const sig = generateSignature(url);
 	const url64 = Buffer.from(url, 'utf-8').toString('base64').replace(/=+/g, '');
 	return `${config.url}/proxy/${url64}/${sig}/preview.jpg?preview=1`;
 }
 
 export function getProxyUrlStatic(url: string) {
-	//const u = new URL(url);
-	//if (toPuny(u.host) === toPuny(config.host)) return url;
+	const u = new URL(url);
+	if (toPuny(u.host) === toPuny(config.host)) return url;
 	const sig = generateSignature(url);
 	const url64 = Buffer.from(url, 'utf-8').toString('base64').replace(/=+/g, '');
 	return `${config.url}/proxy/${url64}/${sig}/static.png?static=1`;
