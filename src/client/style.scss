@@ -1,7 +1,7 @@
 @charset "utf-8";
 
 :root {
-	--baseContentWidth: 750px;
+	--baseContentWidth: 760px;
 	--radius: 8px;
 	--marginFull: 16px;
 	--marginHalf: 10px;
@@ -26,6 +26,9 @@ html {
 	background-position: center;
 	color: var(--fg);
 	overflow: auto;
+	font-family: "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+	line-height: 1.35;
+	text-size-adjust: 100%;
 
 	&, * {
 		scrollbar-color: var(--scrollbarHandle) var(--panel);
@@ -72,6 +75,10 @@ html {
 	&.f-veryLarge {
 		font-size: 1.2em;
 	}
+
+	&.useSystemFont {
+		font-family: sans-serif;
+	}
 }
 
 html.changing-theme {
@@ -88,8 +95,6 @@ html, body {
 	margin: 0;
 	padding: 0;
 	scroll-behavior: smooth;
-	text-size-adjust: 100%;
-	font-family: Roboto, HelveticaNeue, Arial, sans-serif;
 }
 
 a {
@@ -160,6 +165,8 @@ hr {
 	tap-highlight-color: transparent;
 	-webkit-tap-highlight-color: transparent;
 	font-size: 1em;
+	font-family: inherit;
+	line-height: inherit;
 
 	&, * {
 		@extend ._noSelect;
@@ -229,13 +236,19 @@ hr {
 }
 
 ._panel {
-	//position: relative;
-	//z-index: 1;
 	background: var(--panel);
 	border-radius: var(--radius);
 	//border: var(--panelBorder);
-	box-shadow: var(--panelShadow);
 	overflow: hidden;
+}
+
+// TODO: 普通のpanelとの使い分けが特に決まっていないので廃止してもいいかも？
+._panelElevated {
+	@extend ._panel;
+
+	//position: relative;
+	//z-index: 1;
+	box-shadow: var(--panelShadow);
 }
 
 ._card {
@@ -244,7 +257,7 @@ hr {
 	> ._title {
 		margin: 0;
 		padding: 22px 32px;
-		font-size: 1.1em;
+		font-size: 1em;
 		border-bottom: solid 1px var(--panelHeaderDivider);
 		font-weight: bold;
 		background: var(--panelHeaderBg);
@@ -297,6 +310,21 @@ hr {
 	padding: 12px 0;
 }
 
+._borderButton {
+	@extend ._button;
+	display: block;
+	width: 100%;
+	padding: 10px;
+	box-sizing: border-box;
+	text-align: center;
+	border: solid 1px var(--divider);
+	border-radius: var(--radius);
+
+	&:active {
+		border-color: var(--accent);
+	}
+}
+
 ._popup {
 	background: var(--panel);
 	border-radius: var(--radius);
@@ -331,7 +359,6 @@ hr {
 
 	> ._title {
 		margin-bottom: 24px;
-		font-size: 1.25em;
 		font-weight: bold;
 	}
 
@@ -431,10 +458,14 @@ hr {
 	opacity: 0.7;
 }
 
+._monospace {
+	font-family: Fira code, Fira Mono, Consolas, Menlo, Courier, monospace;
+}
+
 ._code {
+	@extend ._monospace;
 	background: #2d2d2d;
 	color: #ccc;
-	font-family: Fira code, Fira Mono, Consolas, Menlo, Courier, monospace;
 	font-size: 14px;
 	line-height: 1.5;
 	padding: 5px;
@@ -471,20 +502,7 @@ hr {
 	90% { opacity: 0; transform: scale(0.5); }
 }
 
-@keyframes anime-spin {
-	0% { transform: rotate(0deg); }
-	100% { transform: rotate(360deg); }
-}
-
-@keyframes anime-jump {
-	0% { transform: translateY(0); }
-	25% { transform: translateY(-16px); }
-	50% { transform: translateY(0); }
-	75% { transform: translateY(-8px); }
-	100% { transform: translateY(0); }
-}
-
-@keyframes anime-tada {
+@keyframes tada {
 	from {
 		transform: scale3d(1, 1, 1);
 	}
@@ -510,34 +528,4 @@ hr {
 	to {
 		transform: scale3d(1, 1, 1);
 	}
-}
-
-@keyframes anime-rubberBand {
-  from {
-    transform: scale3d(1, 1, 1);
-  }
-
-  30% {
-    transform: scale3d(1.25, 0.75, 1);
-  }
-
-  40% {
-    transform: scale3d(0.75, 1.25, 1);
-  }
-
-  50% {
-    transform: scale3d(1.15, 0.85, 1);
-  }
-
-  65% {
-    transform: scale3d(0.95, 1.05, 1);
-  }
-
-  75% {
-    transform: scale3d(1.05, 0.95, 1);
-  }
-
-  to {
-    transform: scale3d(1, 1, 1);
-  }
 }

@@ -15,7 +15,9 @@
 
 <script lang="ts">
 import { defineAsyncComponent, defineComponent } from 'vue';
-import { popups, uploads, pendingApiRequestsCount } from '@/os';
+import { stream, popup, popups, uploads, pendingApiRequestsCount } from '@/os';
+import { store } from '@/store';
+import * as sound from '@/scripts/sound';
 
 export default defineComponent({
 	components: {
@@ -24,6 +26,27 @@ export default defineComponent({
 	},
 
 	setup() {
+		const onNotification = notification => {
+			if (store.state.i.mutingNotificationTypes.includes(notification.type)) return;
+
+			if (document.visibilityState === 'visible') {
+				stream.send('readNotification', {
+					id: notification.id
+				});
+
+				popup(import('@/components/toast.vue'), {
+					notification
+				}, {}, 'closed');
+			}
+
+			sound.play('notification');
+		};
+
+		if (store.getters.isSignedIn) {
+			const connection = stream.useSharedConnection('main', 'UI');
+			connection.on('notification', onNotification);
+		}
+
 		return {
 			uploads,
 			popups,

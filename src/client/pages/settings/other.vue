@@ -1,31 +1,45 @@
 <template>
-<div>
-	<div class="_section">
-		<div class="_card">
-			<div class="_content">
-				<MkSwitch v-model:value="$store.state.i.injectFeaturedNote" @update:value="onChangeInjectFeaturedNote">
-					{{ $t('showFeaturedNotesInTimeline') }}
-				</MkSwitch>
-			</div>
-		</div>
-	</div>
-	<div class="_section">
-		<MkA to="/settings/regedit">RegEdit</MkA>
-	</div>
-</div>
+<FormBase>
+	<FormSwitch :value="$store.state.i.injectFeaturedNote" @update:value="onChangeInjectFeaturedNote">
+		{{ $t('showFeaturedNotesInTimeline') }}
+	</FormSwitch>
+
+	<FormLink to="/settings/account-info">{{ $t('accountInfo') }}</FormLink>
+	<FormLink to="/settings/experimental-features">{{ $t('experimentalFeatures') }}</FormLink>
+
+	<FormGroup>
+		<template #label>{{ $t('developer') }}</template>
+		<FormSwitch v-model:value="debug" @update:value="changeDebug">
+			DEBUG MODE
+		</FormSwitch>
+		<template v-if="debug">
+			<FormLink to="/settings/regedit">RegEdit</FormLink>
+			<FormButton @click="taskmanager">Task Manager</FormButton>
+		</template>
+	</FormGroup>
+</FormBase>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineAsyncComponent, defineComponent } from 'vue';
 import { faEllipsisH } from '@fortawesome/free-solid-svg-icons';
-import MkSelect from '@/components/ui/select.vue';
-import MkSwitch from '@/components/ui/switch.vue';
+import FormSwitch from '@/components/form/switch.vue';
+import FormSelect from '@/components/form/select.vue';
+import FormLink from '@/components/form/link.vue';
+import FormBase from '@/components/form/base.vue';
+import FormGroup from '@/components/form/group.vue';
+import FormButton from '@/components/form/button.vue';
 import * as os from '@/os';
+import { debug } from '@/config';
 
 export default defineComponent({
 	components: {
-		MkSelect,
-		MkSwitch,
+		FormBase,
+		FormSelect,
+		FormSwitch,
+		FormButton,
+		FormLink,
+		FormGroup,
 	},
 
 	emits: ['info'],
@@ -33,11 +47,10 @@ export default defineComponent({
 	data() {
 		return {
 			INFO: {
-				header: [{
-					title: this.$t('other'),
-					icon: faEllipsisH
-				}]
+				title: this.$t('other'),
+				icon: faEllipsisH
 			},
+			debug
 		}
 	},
 
@@ -46,11 +59,22 @@ export default defineComponent({
 	},
 
 	methods: {
+		changeDebug(v) {
+			console.log(v);
+			localStorage.setItem('debug', v.toString());
+			location.reload();
+		},
+
 		onChangeInjectFeaturedNote(v) {
 			os.api('i/update', {
 				injectFeaturedNote: v
 			});
 		},
+
+		taskmanager() {
+			os.popup(import('@/components/taskmanager.vue'), {
+			}, {}, 'closed');
+		}
 	}
 });
 </script>

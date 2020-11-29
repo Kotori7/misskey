@@ -4,19 +4,20 @@
 
 import '@/style.scss';
 
-import { createApp, defineAsyncComponent } from 'vue';
+import { createApp } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 import widgets from './widgets';
 import directives from './directives';
 import components from '@/components';
-import { version, apiUrl, deckmode } from '@/config';
+import { version, apiUrl, ui } from '@/config';
 import { store } from './store';
 import { router } from './router';
 import { applyTheme } from '@/scripts/theme';
 import { isDeviceDarkmode } from '@/scripts/is-device-darkmode';
 import { i18n, lang } from './i18n';
-import { stream, sound, isMobile, dialog } from '@/os';
+import { stream, isMobile, dialog } from '@/os';
+import * as sound from './scripts/sound';
 
 console.info(`Misskey v${version}`);
 
@@ -50,7 +51,7 @@ if (_DEV_) {
 document.addEventListener('touchend', () => {}, { passive: true });
 
 if (localStorage.getItem('theme') == null) {
-	applyTheme(require('@/themes/l-white.json5'));
+	applyTheme(require('@/themes/l-light.json5'));
 }
 
 //#region SEE: https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
@@ -154,7 +155,8 @@ stream.init(store.state.i);
 const app = createApp(await (
 	window.location.search === '?zen' ? import('@/ui/zen.vue') :
 	!store.getters.isSignedIn         ? import('@/ui/visitor.vue') :
-	deckmode                          ? import('@/ui/deck.vue') :
+	ui === 'deck'                     ? import('@/ui/deck.vue') :
+	ui === 'desktop'                  ? import('@/ui/desktop.vue') :
 	import('@/ui/default.vue')
 ).then(x => x.default));
 
@@ -252,7 +254,7 @@ if (store.getters.isSignedIn) {
 		}
 	}
 
-	const main = stream.useSharedConnection('main');
+	const main = stream.useSharedConnection('main', 'System');
 
 	// 自分の情報が更新されたとき
 	main.on('meUpdated', i => {
@@ -306,7 +308,7 @@ if (store.getters.isSignedIn) {
 			hasUnreadMessagingMessage: true
 		});
 
-		sound('chatBg');
+		sound.play('chatBg');
 	});
 
 	main.on('readAllAntennas', () => {
@@ -320,7 +322,7 @@ if (store.getters.isSignedIn) {
 			hasUnreadAntenna: true
 		});
 
-		sound('antenna');
+		sound.play('antenna');
 	});
 
 	main.on('readAllAnnouncements', () => {
@@ -340,7 +342,7 @@ if (store.getters.isSignedIn) {
 			hasUnreadChannel: true
 		});
 
-		sound('channel');
+		sound.play('channel');
 	});
 
 	main.on('readAllAnnouncements', () => {
